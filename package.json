@@ -9,6 +9,6 @@
   },
   "dependencies": {
     "google-spreadsheet": "^0.2.8",
-    "node-trello": "^0.1.5",
+    "node-trello": "^0.1.5"
   }
 }
