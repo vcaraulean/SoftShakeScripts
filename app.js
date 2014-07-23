@@ -13,7 +13,7 @@ String.prototype.format = function() {
     return formatted;
 };
 
-function getSpreadsheetRows(processOneRow) {
+function getSpreadsheetRows(processAllRows) {
     var speakerSheet = new GoogleSpreadsheet("1CTRSexIlUTCYTsPY2-pKLeOmCnaBtC0lKZLutVQoGJ8");
 
     speakerSheet.setAuth(credentials.googleLogin, credentials.googlePassword, function (err) {
@@ -32,19 +32,29 @@ function getSpreadsheetRows(processOneRow) {
             speakerSheet.getRows(1, function (err2, rowData) {
                 console.log("Pulled in " + rowData.length + " rows ");
 
-                for (var i = 0; i < rowData.length; i++) {
-                    processOneRow(rowData[i]);
-                }
+                processAllRows(rowData);
             });
         });
     });
 }
 
+function splitTracksBySession(allRows, cbTracksAndSessions){
+    var tracksBySession = {};
+    for (var i = 0, len = allRows.length; i < len; i++) {
+        var trackName = allRows[i].track;
+        if (tracksBySession[trackName] === undefined){
+            tracksBySession[trackName] = [];
+        }
+        tracksBySession[trackName].push(allRows[i]);
+    }
+
+    cbTracksAndSessions(tracksBySession);
+}
+
+
 function processRow(row) {
     console.log("Processing: [" + row.prénom + " " + row.nom + "] " + row.titre);
 }
-
-//getSpreadsheetRows(processRow);
 
 function archiveAllCards(listId)
 {
@@ -62,15 +72,85 @@ function cleanupSubmissionsBoard(){
             })
         })
     });
-
 }
 
-function listAllBoardLists(){
+function getAllBoardLists(listCallback){
     trello.get("/1/boards/jVmpFPZ8/lists", function(err, data) {
         if (err) throw err;
-        console.log("Board contains " + data.length + "lists");
+        console.log("Board contains " + data.length + " lists");
+        listCallback(data);
     });
 }
 
-cleanupSubmissionsBoard();
+function createList(name, listCreated){
+    console.log("Creating new list: " + name);
+    trello.post("/1/boards/jVmpFPZ8/lists", {name: name}, function (err, data){
+        if (err) throw err;
+        console.log("Created list: " + data.name);
+        listCreated(data);
+    })
+}
+
+function checkListExists(name){
+    trello.get("/1/boards/jVmpFPZ8/lists/" + name, function(err, data){
+       console.log(data);
+    });
+}
+
+function printAllSessionsByTrack(sessionAndTracks){
+    var keys = Object.keys(sessionAndTracks);
+    console.log("Total tracks created: " + keys.length);
+    keys.forEach(function (item){
+        console.log(item + ": " + sessionAndTracks[item].length);
+    });
+}
+
+function createCardsInList(listId, trackRows){
+    trackRows.forEach(function(row){
+        var card = {
+            name: "[" + row.prénom + " " + row.nom + "] " + row.titre,
+            desc: row.description,
+            idList: listId,
+            due: null,
+            urlSource: null
+        };
+        trello.post("/1/cards", card, function(err, data){
+            console.log("Card created: " + data.name);
+        });
+    });
+}
+
+function createListsForEveryTrack(){
+    getSpreadsheetRows(function(allrows){
+        splitTracksBySession(allrows, function(splitted){
+            printAllSessionsByTrack(splitted);
+
+            getAllBoardLists(function(boardLists){
+                var trackNames = Object.keys(splitted);
+                trackNames.forEach(function(trackName){
+                    var idList;
+                    boardLists.forEach(function(list){
+                        if (list.name === trackName){
+                            idList = list.id;
+                        }
+                    });
+
+                    if (idList === undefined){
+                        createList(trackName, function(newList){
+                            boardLists.push(newList);
+                            createCardsInList(newList.id, splitted[trackName]);
+                        })
+                    }
+                    else{
+                        console.log("List for track '{0}' already exists".format(trackName));
+                        createCardsInList(idList, splitted[trackName]);
+                    }
+                })
+            })
+        })
+    })
+}
+
+//cleanupSubmissionsBoard();
+//createListsForEveryTrack();
 
