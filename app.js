@@ -120,7 +120,7 @@ function createCardsInList(listId, trackRows){
     });
 }
 
-function createListsForEveryTrack(){
+function importTalksToListsPerTrack(){
     getSpreadsheetRows(function(allrows){
         splitTracksBySession(allrows, function(splitted){
             printAllSessionsByTrack(splitted);
@@ -151,6 +151,6 @@ function createListsForEveryTrack(){
     })
 }
 
+// Uncomment the line you want to execute
 //cleanupSubmissionsBoard();
-//createListsForEveryTrack();
-
+//importTalksToListsPerTrack();
