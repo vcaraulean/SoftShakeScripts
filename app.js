@@ -109,10 +109,33 @@ function printAllSessionsByTrack(sessionAndTracks){
     });
 }
 
+function formatCardDescription(row){
+    var description = row.description;
+
+    description = description + "\n\r";
+    description = description + " - **Thème:** {0}\n\r".format(row.thème);
+    description = description + " - **Cathégorie:** {0}\n\r".format(row.catégorie);
+    description = description + " - **Niveau(x):** {0}\n\r".format(row.niveaux);
+
+    description = description + "\n\r";
+    description = description + "**Bio**\n\r";
+    description = description + row.biographie;
+    description = description + "\n\r";
+
+
+    description = description + "* * * \n\r";
+    description = description + " - **Email:** {0}\n\r".format(row.email);
+    description = description + " - **Ville, Pays:** {0}\n\r".format(row.villepays);
+    description = description + " - **Profession / titre:** {0}\n\r".format(row.professiontitre);
+    description = description + " - **Organisation:** {0}\n\r".format(row.organisation);
+
+    return description;
+}
+
 function mapRowToCard(row, listId){
     var card = {
         name: "[" + row.prénom + " " + row.nom + "] " + row.titre,
-        desc: row.description,
+        desc: formatCardDescription(row),
         idList: listId,
         due: null,
         urlSource: null
@@ -324,3 +347,4 @@ function uploadTracksToBoards() {
 //createTrackBoards();
 
 uploadTracksToBoards();
+
