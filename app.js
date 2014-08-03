@@ -53,7 +53,7 @@ function splitTracksBySession(allRows, cbTracksAndSessions){
 
 
 function processRow(row) {
-    console.log("Processing: [" + row.prénom + " " + row.nom + "] " + row.titre);
+    console.log("[" + row.track + "]   " +  "[" + row.prénom + " " + row.nom + "] " + row.titre);
 }
 
 function archiveAllCards(listId)
@@ -61,9 +61,11 @@ function archiveAllCards(listId)
     trello.post("/1/lists/{0}/archiveAllCards".format(listId));
 }
 
-function cleanupSubmissionsBoard(){
-    console.log("Cleaning up Submissions board");
-    trello.get("/1/boards/jVmpFPZ8/lists", function(err, data) {
+function closeAllListsFromBoard(boardId)
+{
+    console.log("Closing lists from board id: " + boardId);
+
+    trello.get("/1/boards/{0}/lists".format(boardId), function(err, data) {
         if (err) throw err;
         console.log(data.length + " lists will be removed");
         data.forEach(function(list){
@@ -72,6 +74,12 @@ function cleanupSubmissionsBoard(){
             })
         })
     });
+}
+
+function cleanupSubmissionsBoard(){
+    console.log("Cleaning up Submissions board");
+    var submissionsBoardId = "jVmpFPZ8";
+    closeAllListsFromBoard(submissionsBoardId);
 }
 
 function getAllBoardLists(listCallback){
@@ -151,6 +159,71 @@ function importTalksToListsPerTrack(){
     })
 }
 
+function listAllSubmissions()
+{
+    var printRows = function(rows){
+        rows.forEach(function(item) {
+            processRow(item);
+        })
+    };
+    getSpreadsheetRows(printRows);
+}
+
+function createBoard(boardName, cbCreatedBoard){
+    trello.post("/1/boards", {name: boardName, idOrganization:"softshake14"}, function(err, data){
+        console.log("New board created: " + data.name);
+        cbCreatedBoard(data);
+    })
+}
+
+function getAllCardsFromBoard(boardId, cbAllCards){
+    trello.get("/1/boards/{0}/cards".format(boardId), function(err, data){
+        cbAllCards(data);
+    })
+}
+
+function createTrackBoards(){
+    getSpreadsheetRows(function(allrows) {
+        splitTracksBySession(allrows, function (splitted) {
+            var trackNames = Object.keys(splitted);
+
+            var createRequiredBoardsIfMissing = function(boards){
+                trackNames.forEach(function(trackName){
+                    var boardId = undefined;
+                    boards.forEach(function (board){
+                       if (board.name === trackName){
+                           boardId = board.id;
+                       }
+                    });
+
+                    if (boardId === undefined){
+                        // board not found, create
+                        createBoard(trackName, function(board){
+                            closeAllListsFromBoard(board.id);
+                        })
+                    }
+                });
+            };
+
+            trello.get("/1/organizations/{0}/boards".format("softshake14"), function(err, data){
+                createRequiredBoardsIfMissing(data);
+            })
+        })
+    })
+}
+
+
+function setPermissionsForAllOrgBoards(){
+    trello.get("/1/organizations/{0}/boards".format("softshake14"), function(err, boards){
+        boards.forEach(function(board){
+           trello.put("/1/boards/" + board.id, {prefs: {permissionLevel: "org"}}, function(err, data){});
+        });
+    })
+}
+
 // Uncomment the line you want to execute
+//listAllSubmissions();
 //cleanupSubmissionsBoard();
 //importTalksToListsPerTrack();
+//createTrackBoards();
+
