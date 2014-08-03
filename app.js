@@ -4,6 +4,9 @@ var Trello = require("node-trello");
 
 var trello = new Trello(credentials.trelloApiKey, credentials.trelloToken);
 
+var submissionsBoardId = "jVmpFPZ8";
+
+
 String.prototype.format = function() {
     var formatted = this;
     for (var i = 0; i < arguments.length; i++) {
@@ -78,31 +81,24 @@ function closeAllListsFromBoard(boardId)
 
 function cleanupSubmissionsBoard(){
     console.log("Cleaning up Submissions board");
-    var submissionsBoardId = "jVmpFPZ8";
     closeAllListsFromBoard(submissionsBoardId);
 }
 
-function getAllBoardLists(listCallback){
-    trello.get("/1/boards/jVmpFPZ8/lists", function(err, data) {
+function getAllBoardLists(boardId, listCallback){
+    trello.get("/1/boards/{0}/lists".format(boardId), function(err, data) {
         if (err) throw err;
         console.log("Board contains " + data.length + " lists");
         listCallback(data);
     });
 }
 
-function createList(name, listCreated){
+function createList(boardId, name, listCreated){
     console.log("Creating new list: " + name);
-    trello.post("/1/boards/jVmpFPZ8/lists", {name: name}, function (err, data){
+    trello.post("/1/boards/{0}/lists".format(boardId), {name: name}, function (err, data){
         if (err) throw err;
         console.log("Created list: " + data.name);
         listCreated(data);
     })
-}
-
-function checkListExists(name){
-    trello.get("/1/boards/jVmpFPZ8/lists/" + name, function(err, data){
-       console.log(data);
-    });
 }
 
 function printAllSessionsByTrack(sessionAndTracks){
@@ -113,19 +109,51 @@ function printAllSessionsByTrack(sessionAndTracks){
     });
 }
 
-function createCardsInList(listId, trackRows){
+function mapRowToCard(row, listId){
+    var card = {
+        name: "[" + row.prénom + " " + row.nom + "] " + row.titre,
+        desc: row.description,
+        idList: listId,
+        due: null,
+        urlSource: null
+    };
+    return card;
+}
+
+function createCardsInList(boardId, listId, trackRows){
+
+    var cardsToCreate = [];
+
     trackRows.forEach(function(row){
-        var card = {
-            name: "[" + row.prénom + " " + row.nom + "] " + row.titre,
-            desc: row.description,
-            idList: listId,
-            due: null,
-            urlSource: null
-        };
-        trello.post("/1/cards", card, function(err, data){
-            console.log("Card created: " + data.name);
-        });
+        cardsToCreate.push(mapRowToCard(row, listId));
     });
+
+    var handleExistingCards = function(existingCards){
+        console.log("Found {0} cards in board".format(existingCards.length));
+
+        cardsToCreate.forEach(function(cardToCreate){
+            var found;
+            existingCards.forEach(function(item){
+                if (cardToCreate.name === item.name){
+                    found = item;
+                }
+            });
+
+            if (found === undefined)
+            {
+                trello.post("/1/cards", cardToCreate, function(err, data){
+                    console.log("Card created: " + data.name);
+                });
+            }
+            else{
+                trello.put("/1/cards/{0}".format(found.id), {desc : cardToCreate.desc}, function(err, data){
+                    console.log("Card updated: " + data.name);
+                })
+            }
+        })
+    };
+
+    getAllCardsFromBoard(boardId, handleExistingCards);
 }
 
 function importTalksToListsPerTrack(){
@@ -133,7 +161,7 @@ function importTalksToListsPerTrack(){
         splitTracksBySession(allrows, function(splitted){
             printAllSessionsByTrack(splitted);
 
-            getAllBoardLists(function(boardLists){
+            getAllBoardLists(submissionsBoardId, function(boardLists){
                 var trackNames = Object.keys(splitted);
                 trackNames.forEach(function(trackName){
                     var idList;
@@ -144,14 +172,14 @@ function importTalksToListsPerTrack(){
                     });
 
                     if (idList === undefined){
-                        createList(trackName, function(newList){
+                        createList(submissionsBoardId, trackName, function(newList){
                             boardLists.push(newList);
-                            createCardsInList(newList.id, splitted[trackName]);
+                            createCardsInList(submissionsBoardId, newList.id, splitted[trackName]);
                         })
                     }
                     else{
                         console.log("List for track '{0}' already exists".format(trackName));
-                        createCardsInList(idList, splitted[trackName]);
+                        createCardsInList(submissionsBoardId, idList, splitted[trackName]);
                     }
                 })
             })
@@ -212,7 +240,6 @@ function createTrackBoards(){
     })
 }
 
-
 function setPermissionsForAllOrgBoards(){
     trello.get("/1/organizations/{0}/boards".format("softshake14"), function(err, boards){
         boards.forEach(function(board){
@@ -221,9 +248,79 @@ function setPermissionsForAllOrgBoards(){
     })
 }
 
+function createListsInTrackBoard(board, trackRows) {
+    console.log("Creating predefined lists in board: " + board.name);
+    var submissionsList;
+    var updateBoardLists = function(existingLists){
+        var day1List, day2List;
+        existingLists.forEach(function(list){
+            if (list.name === "Submissions") {
+                submissionsList = list;
+            }
+            if (list.name === "Day 1") {
+                day1List = list;
+            }
+            if (list.name === "Day 2"){
+                day2List = list;
+            }
+        });
+
+        if (day1List === undefined)
+        {
+            createList(board.id, "Day 1", function(l){});
+        }
+
+        if (day2List === undefined)
+        {
+            createList(board.id, "Day 2", function(l){});
+        }
+
+        if (submissionsList === undefined)
+        {
+            createList(board.id, "Submissions", function(list){
+                console.log("Creating lists in track board: " + board.name);
+                createCardsInList(board.id, list.id, trackRows);
+            })
+        }
+        else
+        {
+            console.log("Submissions list already exists in board " + board.name);
+            createCardsInList(board.id, submissionsList.id, trackRows);
+        }
+
+    };
+
+    getAllBoardLists(board.id, updateBoardLists);
+
+}
+
+function uploadTracksToBoards() {
+    getSpreadsheetRows(function (allrows) {
+        splitTracksBySession(allrows, function (tracksAndSessions) {
+            var trackNames = Object.keys(tracksAndSessions);
+
+            trello.get("/1/organizations/{0}/boards".format("softshake14"), function(err, data){
+                trackNames.forEach(function(trackName){
+                    var board = undefined;
+                    data.forEach(function(needle){
+                        if (needle.name == trackName){
+                            board = needle;
+                        }
+                    });
+
+                    createListsInTrackBoard(board, tracksAndSessions[trackName])
+                })
+            })
+        })
+    })
+}
+
+
+
 // Uncomment the line you want to execute
 //listAllSubmissions();
 //cleanupSubmissionsBoard();
 //importTalksToListsPerTrack();
 //createTrackBoards();
 
+uploadTracksToBoards();
