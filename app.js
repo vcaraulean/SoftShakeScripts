@@ -1,11 +1,10 @@
 var GoogleSpreadsheet = require("google-spreadsheet");
-var credentials = require("./credentials.json");
 var Trello = require("node-trello");
+var credentials = require("./credentials.json");
 
 var trello = new Trello(credentials.trelloApiKey, credentials.trelloToken);
 
 var submissionsBoardId = "jVmpFPZ8";
-
 
 String.prototype.format = function() {
     var formatted = this;
@@ -53,7 +52,6 @@ function splitTracksBySession(allRows, cbTracksAndSessions){
 
     cbTracksAndSessions(tracksBySession);
 }
-
 
 function processRow(row) {
     console.log("[" + row.track + "]   " +  "[" + row.prénom + " " + row.nom + "] " + row.titre);
@@ -179,7 +177,7 @@ function createCardsInList(boardId, listId, trackRows){
     getAllCardsFromBoard(boardId, handleExistingCards);
 }
 
-function importTalksToListsPerTrack(){
+function importAllTalksToSubmissionsBoard(){
     getSpreadsheetRows(function(allrows){
         splitTracksBySession(allrows, function(splitted){
             printAllSessionsByTrack(splitted);
@@ -263,14 +261,6 @@ function createTrackBoards(){
     })
 }
 
-function setPermissionsForAllOrgBoards(){
-    trello.get("/1/organizations/{0}/boards".format("softshake14"), function(err, boards){
-        boards.forEach(function(board){
-           trello.put("/1/boards/" + board.id, {prefs: {permissionLevel: "org"}}, function(err, data){});
-        });
-    })
-}
-
 function createListsInTrackBoard(board, trackRows) {
     console.log("Creating predefined lists in board: " + board.name);
     var submissionsList;
@@ -339,12 +329,13 @@ function uploadTracksToBoards() {
 }
 
 
-
 // Uncomment the line you want to execute
+
 //listAllSubmissions();
 //cleanupSubmissionsBoard();
-//importTalksToListsPerTrack();
-//createTrackBoards();
 
-uploadTracksToBoards();
+//createTrackBoards();
+//importAllTalksToSubmissionsBoard();
+//uploadTracksToBoards();
+
 
