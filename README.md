@@ -1,4 +1,6 @@
-# SoftShakeToTrello
+# SoftShake Scripts
+
+A set of Node.js scripts to manage SoftShake submissions.
 
 ## How to run
     
