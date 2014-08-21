@@ -29,7 +29,7 @@ function getSpreadsheetRows(processAllRows) {
                 console.log(err);
                 return;
             }
-            console.log(sheetInfo.title + " is loaded");
+            console.log(sheetInfo.title + "");
 
             submissionsSheet.getRows(1, function (err2, rowData) {
                 console.log("Pulled in " + rowData.length + " rows ");
