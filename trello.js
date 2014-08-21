@@ -1,19 +1,11 @@
 var GoogleSpreadsheet = require("google-spreadsheet");
 var Trello = require("node-trello");
 var credentials = require("./credentials.json");
+var commons = require("./common.js");
 
 var trello = new Trello(credentials.trelloApiKey, credentials.trelloToken);
 
 var submissionsBoardId = "jVmpFPZ8";
-
-String.prototype.format = function() {
-    var formatted = this;
-    for (var i = 0; i < arguments.length; i++) {
-        var regexp = new RegExp('\\{'+i+'\\}', 'gi');
-        formatted = formatted.replace(regexp, arguments[i]);
-    }
-    return formatted;
-};
 
 function getSpreadsheetRows(processAllRows) {
     var submissionsSheet = new GoogleSpreadsheet("1CTRSexIlUTCYTsPY2-pKLeOmCnaBtC0lKZLutVQoGJ8");
@@ -54,7 +46,7 @@ function splitTracksBySession(allRows, cbTracksAndSessions){
 }
 
 function processRow(row) {
-    console.log("[" + row.track + "]   " +  "[" + row.prénom + " " + row.nom + "] " + row.titre);
+    console.log("[{0}]   [{1} {2}] {3}".format(row.track, row.prénom, row.nom, row.titre));
 }
 
 function archiveAllCards(listId)

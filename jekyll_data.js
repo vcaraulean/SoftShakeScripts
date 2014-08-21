@@ -2,6 +2,7 @@ var GoogleSpreadsheet = require("google-spreadsheet");
 var credentials = require("./credentials.json");
 var fs = require("fs");
 var path = require("path");
+var common = require("./common.js")
 
 var mkDirSync = function (path) {
     try {
@@ -34,3 +35,5 @@ var simpleObj = {
 };
 
 writeToFile("sample_data.json", simpleObj);
+
+console.log("{0}/{1}".format("one", 2));
