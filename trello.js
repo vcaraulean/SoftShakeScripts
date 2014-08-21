@@ -16,22 +16,22 @@ String.prototype.format = function() {
 };
 
 function getSpreadsheetRows(processAllRows) {
-    var speakerSheet = new GoogleSpreadsheet("1CTRSexIlUTCYTsPY2-pKLeOmCnaBtC0lKZLutVQoGJ8");
+    var submissionsSheet = new GoogleSpreadsheet("1CTRSexIlUTCYTsPY2-pKLeOmCnaBtC0lKZLutVQoGJ8");
 
-    speakerSheet.setAuth(credentials.googleLogin, credentials.googlePassword, function (err) {
+    submissionsSheet.setAuth(credentials.googleLogin, credentials.googlePassword, function (err) {
         if (err) {
             console.log(err);
             return;
         }
 
-        speakerSheet.getInfo(function (err1, sheetInfo) {
+        submissionsSheet.getInfo(function (err1, sheetInfo) {
             if (err) {
                 console.log(err);
                 return;
             }
             console.log(sheetInfo.title + " is loaded");
 
-            speakerSheet.getRows(1, function (err2, rowData) {
+            submissionsSheet.getRows(1, function (err2, rowData) {
                 console.log("Pulled in " + rowData.length + " rows ");
 
                 processAllRows(rowData);
@@ -331,7 +331,7 @@ function uploadTracksToBoards() {
 
 // Uncomment the line you want to execute
 
-//listAllSubmissions();
+listAllSubmissions();
 //cleanupSubmissionsBoard();
 
 //createTrackBoards();

@@ -4,7 +4,7 @@
     
     npm install 
 
-Then execute 'app.js'
+Then execute 'trello.js'
 
 ## Configure authorization
 
