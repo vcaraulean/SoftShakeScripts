@@ -1,36 +1,11 @@
-var GoogleSpreadsheet = require("google-spreadsheet");
 var Trello = require("node-trello");
 var credentials = require("./credentials.json");
 var commons = require("./common.js");
+var gSpreadsheet = require("./gSpreadsheet");
 
 var trello = new Trello(credentials.trelloApiKey, credentials.trelloToken);
 
 var submissionsBoardId = "jVmpFPZ8";
-
-function getSpreadsheetRows(processAllRows) {
-    var submissionsSheet = new GoogleSpreadsheet("1CTRSexIlUTCYTsPY2-pKLeOmCnaBtC0lKZLutVQoGJ8");
-
-    submissionsSheet.setAuth(credentials.googleLogin, credentials.googlePassword, function (err) {
-        if (err) {
-            console.log(err);
-            return;
-        }
-
-        submissionsSheet.getInfo(function (err1, sheetInfo) {
-            if (err) {
-                console.log(err);
-                return;
-            }
-            console.log(sheetInfo.title + "");
-
-            submissionsSheet.getRows(1, function (err2, rowData) {
-                console.log("Pulled in " + rowData.length + " rows ");
-
-                processAllRows(rowData);
-            });
-        });
-    });
-}
 
 function splitTracksBySession(allRows, cbTracksAndSessions){
     var tracksBySession = {};
@@ -45,7 +20,7 @@ function splitTracksBySession(allRows, cbTracksAndSessions){
     cbTracksAndSessions(tracksBySession);
 }
 
-function processRow(row) {
+function printRow(row) {
     console.log("[{0}]   [{1} {2}] {3}".format(row.track, row.prénom, row.nom, row.titre));
 }
 
@@ -170,7 +145,7 @@ function createCardsInList(boardId, listId, trackRows){
 }
 
 function importAllTalksToSubmissionsBoard(){
-    getSpreadsheetRows(function(allrows){
+    gSpreadsheet.processRow(function(allrows){
         splitTracksBySession(allrows, function(splitted){
             printAllSessionsByTrack(splitted);
 
@@ -204,10 +179,10 @@ function listAllSubmissions()
 {
     var printRows = function(rows){
         rows.forEach(function(item) {
-            processRow(item);
+            printRow(item);
         })
     };
-    getSpreadsheetRows(printRows);
+    gSpreadsheet.processRow(printRows);
 }
 
 function createBoard(boardName, cbCreatedBoard){
@@ -224,7 +199,7 @@ function getAllCardsFromBoard(boardId, cbAllCards){
 }
 
 function createTrackBoards(){
-    getSpreadsheetRows(function(allrows) {
+    gSpreadsheet.processRow(function(allrows) {
         splitTracksBySession(allrows, function (splitted) {
             var trackNames = Object.keys(splitted);
 
@@ -300,7 +275,7 @@ function createListsInTrackBoard(board, trackRows) {
 }
 
 function uploadTracksToBoards() {
-    getSpreadsheetRows(function (allrows) {
+    gSpreadsheet.processRow(function (allrows) {
         splitTracksBySession(allrows, function (tracksAndSessions) {
             var trackNames = Object.keys(tracksAndSessions);
 

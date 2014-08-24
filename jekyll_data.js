@@ -1,8 +1,7 @@
-var GoogleSpreadsheet = require("google-spreadsheet");
-var credentials = require("./credentials.json");
 var fs = require("fs");
 var path = require("path");
 var common = require("./common.js")
+var gSpreadsheet = require("./gSpreadsheet");
 
 var mkDirSync = function (path) {
     try {
