@@ -27,12 +27,34 @@ function writeToFile(fileName, data){
 // - pull data
 // - write to local folder json files
 
-var simpleObj = {
-    property1: "something",
-    property2: "else",
-    propertyInt: 1234
-};
+function createDataRecord(spreadsheetRow){
+    var record = {
+        speakerName: "{0} {1}".format(spreadsheetRow.prénom, spreadsheetRow.nom),
+        speakerEmail: spreadsheetRow.email,
+        speakerBio: spreadsheetRow.biographie,
+        speakerAddress: spreadsheetRow.villepays,
+        speakerTitle: spreadsheetRow.professiontitre,
+        speakerOrganization: spreadsheetRow.organisation,
+        sessionTitle: spreadsheetRow.titre,
+        sessionDescription: spreadsheetRow.description,
+        sessionCategory: spreadsheetRow.catégorie,
+        sessionLevel: spreadsheetRow.niveaux,
+        sessionTopic: spreadsheetRow.thème,
+        sessionTags: [spreadsheetRow.track],
+        scheduleDay: 1,
+        scheduleOrder: 1
+    };
+    return record;
+}
 
-writeToFile("sample_data.json", simpleObj);
+function processAllRows(rows){
+    var records = [];
 
-console.log("{0}/{1}".format("one", 2));
+    for(var i = 0; i < rows.length; i++){
+        records.push(createDataRecord(rows[i]));
+    }
+
+    writeToFile("sessions.json", records);
+}
+
+gSpreadsheet.processRow(processAllRows);
