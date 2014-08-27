@@ -35,7 +35,6 @@ function anyStringToFileName(input) {
 }
 
 function createSessionFile(spreadsheetRow){
-    var scheduleParts = spreadsheetRow.schedule.split("/");
     var record = {
         layout: "2014_default_en",
         speakerName: "{0} {1}".format(spreadsheetRow.prénom, spreadsheetRow.nom),
@@ -48,33 +47,51 @@ function createSessionFile(spreadsheetRow){
         sessionCategory: spreadsheetRow.catégorie,
         sessionLevel: spreadsheetRow.niveaux,
         sessionTopic: spreadsheetRow.thème,
-        sessionTags: [spreadsheetRow.track],
-        scheduleDay: scheduleParts[0],
-        scheduleOrder: scheduleParts[1]
+        sessionTags: [spreadsheetRow.track]
     };
+
+    record = addSchedule(record, spreadsheetRow.schedule);
 
     var header = yaml.stringify(record, 4);
 
     var fileName = anyStringToFileName(spreadsheetRow.titre);
     var filePath = getPathForFile("_sessions/" + fileName);
-    fs.writeFileSync(filePath, "---\n")
+    fs.writeFileSync(filePath, "---\n");
 
     fs.appendFileSync(filePath, header + "---\n\n");
     fs.appendFileSync(filePath, spreadsheetRow.description + "\n");
     return fileName;
 }
 
+function addSchedule(record, scheduleValue){
+    var scheduleParts = scheduleValue.split("/");
+    var day = scheduleParts[0],
+        order = scheduleParts[1],
+        room = scheduleParts[2];
+    if (scheduleParts[0] === undefined || scheduleParts[0] == "") {
+        day = "?";
+    }
+    if (scheduleParts[1] === undefined) {
+        order = "?";
+    }
+    if (scheduleParts[2] === undefined) {
+        room = "?";
+    }
+
+    record.scheduleDay = day;
+    record.scheduleOrder = order;
+    record.scheduleRoom = room;
+    return record;
+}
+
 function createProgramRecord(spreadsheetRow, sessionFile){
-    var scheduleParts = spreadsheetRow.schedule.split("/");
     var record = {
         speakerName: "{0} {1}".format(spreadsheetRow.prénom, spreadsheetRow.nom),
         sessionTitle: spreadsheetRow.titre,
         sessionTags: [spreadsheetRow.track],
-        scheduleDay: scheduleParts[0],
-        scheduleOrder: scheduleParts[1],
         sessionFileName: sessionFile
     };
-    return record;
+    return addSchedule(record, spreadsheetRow.schedule);
 }
 
 function processAllRows(rows){
