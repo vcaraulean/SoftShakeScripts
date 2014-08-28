@@ -31,8 +31,7 @@ function writeToFile(fileName, data){
 }
 
 function anyStringToFileName(input) {
-    var name = input.replace(/[^a-z0-9\u00C0-\u017F]/gi, '-').toLowerCase();
-    return name + ".md";
+    return  input.replace(/[^a-z0-9\u00C0-\u017F]/gi, '-').toLowerCase();
 }
 
 function createSessionFile(spreadsheetRow){
@@ -57,7 +56,7 @@ function createSessionFile(spreadsheetRow){
     var header = yaml.stringify(record, 4);
 
     var fileName = anyStringToFileName(spreadsheetRow.titre);
-    var filePath = getPathForFile("_sessions/" + fileName);
+    var filePath = getPathForFile("_sessions/" + fileName + ".md");
     fs.writeFileSync(filePath, "---\n");
 
     fs.appendFileSync(filePath, header + "---\n\n");
