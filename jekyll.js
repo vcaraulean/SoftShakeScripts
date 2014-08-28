@@ -4,6 +4,7 @@ var common = require("./common.js")
 var gSpreadsheet = require("./gSpreadsheet");
 var yaml = require("yamljs");
 var gravatar = require("gravatar");
+var diacritics = require("diacritics");
 
 var mkDirSync = function (path) {
     try {
@@ -31,7 +32,8 @@ function writeToFile(fileName, data){
 }
 
 function anyStringToFileName(input) {
-    return  input.replace(/[^a-z0-9\u00C0-\u017F]/gi, '-').toLowerCase();
+    var noDiacritics = diacritics.remove(input);
+    return  noDiacritics.replace(/[^a-z0-9\u00C0-\u017F]/gi, '-').toLowerCase();
 }
 
 function createSessionFile(spreadsheetRow){
