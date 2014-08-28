@@ -3,6 +3,7 @@ var path = require("path");
 var common = require("./common.js")
 var gSpreadsheet = require("./gSpreadsheet");
 var yaml = require("yamljs");
+var gravatar = require("gravatar");
 
 var mkDirSync = function (path) {
     try {
@@ -10,10 +11,10 @@ var mkDirSync = function (path) {
     } catch(e) {
         if ( e.code != 'EEXIST' ) throw e;
     }
-}
+};
 
 function getPathForFile(name){
-    mkDirSync(".test")
+    mkDirSync(".test");
     var localFolder = ".test/_data";
     mkDirSync(localFolder);
     mkDirSync(localFolder + "/_sessions");
@@ -44,6 +45,7 @@ function createSessionFile(spreadsheetRow){
         speakerAddress: spreadsheetRow.villepays,
         speakerTitle: spreadsheetRow.professiontitre,
         speakerOrganization: spreadsheetRow.organisation,
+        speakerAvatarUrl: gravatar.url(spreadsheetRow.email, {size: 200}),
         sessionCategory: spreadsheetRow.catégorie,
         sessionLevel: spreadsheetRow.niveaux,
         sessionTopic: spreadsheetRow.thème,
