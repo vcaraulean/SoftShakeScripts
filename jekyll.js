@@ -33,7 +33,24 @@ function writeToFile(fileName, data){
 
 function anyStringToFileName(input) {
     var noDiacritics = diacritics.remove(input);
-    return  noDiacritics.replace(/[^a-z0-9\u00C0-\u017F]/gi, '-').toLowerCase();
+    var lowerCased = noDiacritics.replace(/[^a-z0-9\u00C0-\u017F]/gi, '-').toLowerCase();
+
+    var finalName = [];
+    for (var i = 0; i < lowerCased.length; i++){
+        // strip first or last '-' in name
+        if((i == 0 || i == lowerCased.length - 1) && lowerCased[i] == '-'){
+            i++;
+            continue;
+        }
+        // stripping multiple '-' in a row, taking only one
+        if (lowerCased[i] == '-' && lowerCased[i+1] == '-' ){
+            i++;
+            continue;
+        }
+        finalName.push(lowerCased[i]);
+    }
+
+    return finalName.join('');
 }
 
 function createSessionFile(spreadsheetRow){
