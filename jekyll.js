@@ -39,18 +39,17 @@ function anyStringToFileName(input) {
     for (var i = 0; i < lowerCased.length; i++){
         // strip first or last '-' in name
         if((i == 0 || i == lowerCased.length - 1) && lowerCased[i] == '-'){
-            i++;
             continue;
         }
         // stripping multiple '-' in a row, taking only one
         if (lowerCased[i] == '-' && lowerCased[i+1] == '-' ){
-            i++;
             continue;
         }
         finalName.push(lowerCased[i]);
     }
 
-    return finalName.join('');
+    var result = finalName.join('')
+    return result;
 }
 
 function createSessionFile(spreadsheetRow){
