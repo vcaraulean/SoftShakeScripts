@@ -6,7 +6,7 @@ A set of Node.js scripts to manage SoftShake submissions.
     
     npm install 
 
-Then execute 'trello.js'
+Then execute 'to_trello.js'
 
 ## Configure authorization
 

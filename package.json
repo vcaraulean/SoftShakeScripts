@@ -2,7 +2,7 @@
   "name": "softshake2trello",
   "version": "0.0.1",
   "description": "softshake2trello",
-  "main": "trello.js",
+  "main": "to_trello.js",
   "author": {
     "name": "vcaraulean",
     "email": "valeriu@caraulean.com"

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/softshake2trello.iml" filepath="$PROJECT_DIR$/.idea/softshake2trello.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/SoftShakeScripts.iml" filepath="$PROJECT_DIR$/.idea/SoftShakeScripts.iml" />
     </modules>
   </component>
 </project>

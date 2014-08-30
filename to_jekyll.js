@@ -16,11 +16,11 @@ var mkDirSync = function (path) {
 
 function getPathForFile(name){
     mkDirSync(".test");
-    var localFolder = ".test/_data";
+    var localFolder = ".test/_trello_export";
     mkDirSync(localFolder);
     mkDirSync(localFolder + "/_sessions");
 
-    return path.join(".test/_data", name);
+    return path.join(".test/_trello_export", name);
 }
 
 function writeToFile(fileName, data){
@@ -48,13 +48,13 @@ function anyStringToFileName(input) {
         finalName.push(lowerCased[i]);
     }
 
-    var result = finalName.join('')
+    var result = finalName.join('');
     return result;
 }
 
 function createSessionFile(spreadsheetRow){
     var record = {
-        layout: "2014_default_en",
+        layout: "2014_session",
         speakerName: "{0} {1}".format(spreadsheetRow.prénom, spreadsheetRow.nom),
         sessionTitle: spreadsheetRow.titre,
         speakerEmail: spreadsheetRow.email,
@@ -62,7 +62,7 @@ function createSessionFile(spreadsheetRow){
         speakerAddress: spreadsheetRow.villepays,
         speakerTitle: spreadsheetRow.professiontitre,
         speakerOrganization: spreadsheetRow.organisation,
-        speakerAvatarUrl: gravatar.url(spreadsheetRow.email, {size: 200}),
+        speakerAvatarUrl: gravatar.url(spreadsheetRow.email, {size: 200, default: "mm"}),
         sessionCategory: spreadsheetRow.catégorie,
         sessionLevel: spreadsheetRow.niveaux,
         sessionTopic: spreadsheetRow.thème,
