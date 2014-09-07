@@ -1,6 +1,6 @@
 var fs = require("fs");
 var path = require("path");
-var common = require("./common.js")
+var common = require("./common.js");
 var gSpreadsheet = require("./gSpreadsheet");
 var yaml = require("yamljs");
 var gravatar = require("gravatar");
@@ -15,12 +15,11 @@ var mkDirSync = function (path) {
 };
 
 function getPathForFile(name){
-    mkDirSync(".test");
-    var localFolder = ".test/_trello_export";
+    mkDirSync(".export");
+    var localFolder = ".export/_exported_sessions";
     mkDirSync(localFolder);
-    mkDirSync(localFolder + "/_sessions");
 
-    return path.join(".test/_trello_export", name);
+    return path.join(".export/_exported_sessions", name);
 }
 
 function writeToFile(fileName, data){
@@ -48,8 +47,7 @@ function anyStringToFileName(input) {
         finalName.push(lowerCased[i]);
     }
 
-    var result = finalName.join('');
-    return result;
+    return finalName.join('');
 }
 
 function createSessionFile(spreadsheetRow){
@@ -74,7 +72,7 @@ function createSessionFile(spreadsheetRow){
     var header = yaml.stringify(record, 4);
 
     var fileName = anyStringToFileName(spreadsheetRow.titre);
-    var filePath = getPathForFile("_sessions/" + fileName + ".md");
+    var filePath = getPathForFile(fileName + ".md");
     fs.writeFileSync(filePath, "---\n");
 
     fs.appendFileSync(filePath, header + "---\n\n");
@@ -103,30 +101,16 @@ function addSchedule(record, scheduleValue){
     return record;
 }
 
-function createProgramRecord(spreadsheetRow, sessionFile){
-    var record = {
-        speakerName: "{0} {1}".format(spreadsheetRow.prénom, spreadsheetRow.nom),
-        sessionTitle: spreadsheetRow.titre,
-        sessionTags: [spreadsheetRow.track],
-        sessionFileName: sessionFile
-    };
-    return addSchedule(record, spreadsheetRow.schedule);
-}
-
 function processAllRows(rows){
-    var records = [];
-
+    var rowsExported = 0;
     for(var i = 0; i < rows.length; i++){
         var row = rows[i];
         if (row.isselected == "1"){
-            var sessionFile = createSessionFile(row);
-            records.push(createProgramRecord(row, sessionFile));
+            createSessionFile(row);
+            rowsExported++;
         }
     }
-
-    writeToFile("program.json", records);
-
-    console.log("Exported {0} selected talks".format(records.length));
+    console.log("Exported {0} selected talks".format(rowsExported));
 }
 
 gSpreadsheet.processRow(processAllRows);

@@ -1,7 +1,7 @@
 # app-specific
 credentials.json
 .idea/workspace.xml
-.test
+.export
 
 # Logs
 logs
