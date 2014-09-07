@@ -53,8 +53,8 @@ function anyStringToFileName(input) {
 function createSessionFile(spreadsheetRow){
     var record = {
         layout: "2014_session",
-        speakerName: "{0} {1}".format(spreadsheetRow.prénom, spreadsheetRow.nom),
         sessionTitle: spreadsheetRow.titre,
+        speakerName: "{0} {1}".format(spreadsheetRow.prénom, spreadsheetRow.nom),
         speakerEmail: spreadsheetRow.email,
         speakerBio: spreadsheetRow.biographie,
         speakerAddress: spreadsheetRow.villepays,
@@ -66,6 +66,15 @@ function createSessionFile(spreadsheetRow){
         sessionTopic: spreadsheetRow.thème,
         sessionTags: [spreadsheetRow.track]
     };
+
+    if (spreadsheetRow.ndorateurprénom != "" && spreadsheetRow.ndorateurnom != ""){
+        record.secondSpeakerName = "{0} {1}".format(spreadsheetRow.ndorateurprénom, spreadsheetRow.ndorateurnom);
+        record.secondSpeakerEmail = spreadsheetRow.ndorateuremail;
+        record.secondSpeakerBio = spreadsheetRow.ndorateurbiographie;
+        record.secondSpeakerTitle = spreadsheetRow.ndorateurprofessiontitre;
+        record.secondSpeakerOrganization = spreadsheetRow.ndorateurorganisation;
+        record.secondSpeakerAvatarUrl = gravatar.url(spreadsheetRow.ndorateuremail, {size: 200, default: "mm"});
+    }
 
     record = addSchedule(record, spreadsheetRow.schedule);
 
